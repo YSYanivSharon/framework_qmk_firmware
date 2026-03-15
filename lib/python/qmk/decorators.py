@@ -1,5 +1,5 @@
-"""Helpful decorators that subcommands can use.
-"""
+"""Helpful decorators that subcommands can use."""
+
 import functools
 from time import monotonic
 
@@ -14,15 +14,18 @@ def automagic_keyboard(func):
 
     This will rewrite cli.config.<subcommand>.keyboard if the user did not pass `--keyboard` and the directory they are currently in is a keyboard or keymap directory.
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # Ensure that `--keyboard` was not passed and CWD is under `qmk_firmware/keyboards`
-        if cli.config_source[cli._subcommand.__name__]['keyboard'] != 'argument':
+        if cli.config_source[cli.subcommand_name]["keyboard"] != "argument":
             keyboard = find_keyboard_from_dir()
 
             if keyboard:
-                cli.config[cli._subcommand.__name__]['keyboard'] = keyboard
-                cli.config_source[cli._subcommand.__name__]['keyboard'] = 'keyboard_directory'
+                cli.config[cli.subcommand_name]["keyboard"] = keyboard
+                cli.config_source[cli.subcommand_name][
+                    "keyboard"
+                ] = "keyboard_directory"
 
         return func(*args, **kwargs)
 
@@ -34,15 +37,16 @@ def automagic_keymap(func):
 
     This will rewrite cli.config.<subcommand>.keymap if the user did not pass `--keymap` and the directory they are currently in is a keymap, layout, or user directory.
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # Ensure that `--keymap` was not passed and that we're under `qmk_firmware`
-        if cli.config_source[cli._subcommand.__name__]['keymap'] != 'argument':
+        if cli.config_source[cli.subcommand_name]["keymap"] != "argument":
             keymap_name, keymap_type = find_keymap_from_dir()
 
             if keymap_name:
-                cli.config[cli._subcommand.__name__]['keymap'] = keymap_name
-                cli.config_source[cli._subcommand.__name__]['keymap'] = keymap_type
+                cli.config[cli.subcommand_name]["keymap"] = keymap_name
+                cli.config_source[cli.subcommand_name]["keymap"] = keymap_type
 
         return func(*args, **kwargs)
 
@@ -63,6 +67,7 @@ def lru_cache(timeout=10, maxsize=128, typed=False):
         typed
             When `True` argument types will be taken into consideration, for example `3` and `3.0` will be treated as different keys.
     """
+
     def wrapper_cache(func):
         func = functools.lru_cache(maxsize=maxsize, typed=typed)(func)
         func.expiration = monotonic() + timeout
